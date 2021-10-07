@@ -1,1 +1,5 @@
-
+numpy
+matplotlib
+pandas
+intervaltree
+python-dateutil
