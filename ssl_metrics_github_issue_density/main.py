@@ -31,20 +31,37 @@ def import_data_issues(filename: str = "issues.json") -> list:
     with open(file = filename, mode= "r") as fp:
         return (json.load(fp))
 
+#get the LOC from issues file
+def get_loc_sum_from_issues(file)-> list:
+    return ([issues["loc_sum"] for issues in file])
+
+#get the day from issues file
+def get_day_from_issues(file)-> list:
+    return ([issues["day"] for issues in file])
+
+def get_created_at_from_commits(file)-> list:
+    print ([commits["created_at"] for commits in file])
+
+# def get_created_at_from_commits(file)-> list:
+    print (file[len(file)-1]["created_at"])
+
 
 def main():
     args = getArgs1()
     jsonfile1 = args.jsonfile1.name
-    data = import_data_commits(jsonfile1)
+    data1 = import_data_commits(jsonfile1)
+    get_created_at_from_commits(data1)
     args = getArgs2()
     jsonfile2 = args.jsonfile2.name
-    data = import_data_issues(jsonfile2)
-
+    data2 = import_data_issues(jsonfile2)
+    #get the value LOC_sum from commits.json
+    loc_sum = get_loc_sum_from_issues(data2)
+    get_day = get_day_from_issues(data2)
 if __name__ == "__main__":
     main()
 
 
 #get values from both files:
 #issues.json: created_at/updated_at/closed_at (for timeline), user (attached to each)
-#commits.json: LOC_sum (module size),  day (for timeline)
+#commits.json: LOC_sum (module size),  day (for timeline) - DONE
 # create timeline of commits, in between put issues
