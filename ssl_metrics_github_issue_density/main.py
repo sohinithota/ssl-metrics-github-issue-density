@@ -1,5 +1,6 @@
 import argparse
 import json
+from collections import Counter
 from datetime import date, timedelta
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
@@ -52,9 +53,17 @@ def day_to_date(file) -> list:
       #  print(days)
     return(result)
 
-def create_graph(file) -> list:
-    print(file)
-
+#graph that aggregates all commits on a specific day
+def aggregate_commits_graph(file) -> list:
+    #for each element in count, if the first index is a date, store it in lx
+    #ly = y values 
+    #the immediate next element ties to this 
+    count = dict(Counter(file))
+    print(count)
+    # https://realpython.com/iterate-through-dictionary-python/#iterating-through-items
+    # iterate through dictionary values and keys- keys will be x, values will be y 
+    for key in count.keys():
+        print(key, '->', count[key])
 def main():
     args = getArgs1()
     jsonfile1 = args.jsonfile1.name #commits.json
@@ -65,7 +74,7 @@ def main():
     jsonfile2 = args.jsonfile2.name #issues.json
     data2 = import_data_issues(jsonfile2)
     get_created_at_from_issues(data2)
-    create_graph(data1)
+    aggregate_commits_graph(data1)
     #get the value LOC_sum from commits.json
     
 if __name__ == "__main__":
