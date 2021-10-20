@@ -1,64 +1,57 @@
 import argparse
-import json
+from argparse import Namespace
 from collections import Counter
 from datetime import date, timedelta
 
 import matplotlib.pyplot as plt
+from pandas import DataFrame
+import pandas
 
 plt.rcdefaults()
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-def getArgs1():
-    argparse1 = argparse.ArgumentParser(
-        prog="SSL Metrics Density Issues",
-        usage="Generate metrics based on Density issues",
+def getArgs():
+    arg = argparse.ArgumentParser(
+        prog="SSL Metrics Issue Density",
+        usage="Generate Issue Density metrics",
     )
-    argparse1.add_argument(
-        "-j",
-        "--jsonfile1",
+
+    arg.add_argument(
+        "-c",
+        "--commits",
         required=True,
         type=open,
-        help="first json for this project- commits one.",
+        help="Commits JSON file",
     )
-    argparse1.add_argument(
-        "-j2",
-        "--jsonfile2",
+    arg.add_argument(
+        "-i",
+        "--issues",
         required=True,
         type=open,
-        help="second json for this project- issues one.",
+        help="Issues JSON file",
     )
 
-    args1 = argparse1.parse_args()
-    return args1
+    args = arg.parse_args()
+    return args
 
-
-# used this method in previous productivity project, it takes in the JSON as a list to be manipulated later. I store data for both files in this project.
-def import_data_commits(filename: str = "commits.json") -> list:
-    with open(file=filename, mode="r") as fp:
-        return json.load(fp)
-
-
-def import_data_issues(filename: str = "issues.json") -> list:
-    with open(file=filename, mode="r") as fp:
-        return json.load(fp)
-
+def loadData(filename: str) -> DataFrame:
+    return pandas.read_json(filename)
 
 # get the LOC from issues file
-def get_loc_sum_from_issues(file) -> list:
-    return [issues["delta_loc"] for issues in file]
+def getDeltaLOC(commitsDF: DataFrame) -> DataFrame:
+    return commitsDF["delta_loc"]
 
 
 # get the day from issues file
-def get_day_from_commits(file) -> list:
-    return [commits["day"] for commits in file]
+def getDay(commitsDF: DataFrame) -> DataFrame:
+    return commitsDF["day_since_0"]
 
 
 def get_created_at_from_issues(file) -> list:
     return [commits["created_at"] for commits in file]
-    return [commits["closed_at"] for commits in file]
-    return [commits["updated_at"] for commits in file]
+    # return [commits["closed_at"] for commits in file]
 
 
 # gets day value from commits.json and converts to a date type starting at project start
@@ -92,16 +85,19 @@ def aggregate_commits_graph(file) -> list:
 
 
 def main():
-    args = getArgs1()
-    jsonfile1 = args.jsonfile1.name  # commits.json
-    data1 = import_data_commits(jsonfile1)
-    loc_sum = get_loc_sum_from_issues(data1)
-    get_day = get_day_from_commits(data1)
-    data1 = day_to_date(data1)  ##days of commits
-    jsonfile2 = args.jsonfile2.name  # issues.json
-    data2 = import_data_issues(jsonfile2)
-    get_created_at_from_issues(data2)
-    aggregate_commits_graph(data1)
+    args: Namespace = getArgs()
+
+    commitsDF: DataFrame = loadData(filename=args.commits)
+    issuesDF: DataFrame = loadData(filename=args.issues)
+
+    getDeltaLOC(commitsDF=commitsDF)
+    getDay(commitsDF=commitsDF)
+
+    # loc_sum = get_loc_sum_from_issues(issuesDF)
+    # get_day = get_day_from_commits(commitsDF)
+    # data1 = day_to_date(commitsDF)  ##days of commits
+    # get_created_at_from_issues(issuesDF)
+    # aggregate_commits_graph(data1)
     # get the value LOC_sum from commits.json
 
 
