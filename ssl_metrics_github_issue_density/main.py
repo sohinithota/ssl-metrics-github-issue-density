@@ -1,11 +1,11 @@
 import argparse
 from argparse import Namespace
 from collections import Counter
-from datetime import date, timedelta
-
+from datetime import date, timedelta, datetime
+from intervaltree import Interval, IntervalTree
 import matplotlib.pyplot as plt
 from pandas import DataFrame
-import pandas
+import pandas 
 
 plt.rcdefaults()
 import matplotlib.pyplot as plt
@@ -46,14 +46,34 @@ def getDeltaLOC(commitsDF: DataFrame) -> DataFrame:
 
 # get the day from issues file
 def getDay(commitsDF: DataFrame) -> DataFrame:
-    return commitsDF["day_since_0"]
+    return commitsDF["day"]
 
 
-def get_created_at_from_issues(file) -> list:
-    return [commits["created_at"] for commits in file]
+def get_created_at_from_issues(issuesDF: DataFrame) -> DataFrame:
+    return issuesDF["created_at"]
     # return [commits["closed_at"] for commits in file]
 
 
+#make issue days to have intervals- start date is 4/28/2020
+def change_created_at_from_issues(issuesDF: DataFrame) -> DataFrame:
+    tree = IntervalTree()
+    days = issuesDF["created_at"]
+    empty = []
+    start = date(2020, 4, 28)
+    start = start.strftime("%m-%d-%y")
+    column = issuesDF['created_at'].dt.strftime("%m-%d-%y")
+   # print(f"\ncol_one_list:\n{column}\ntype:{type(column)}")
+    # days = issuesDF['created_at']
+    for day in column:
+        interval1 = start
+        interval2 = day
+        start1 = datetime.strptime(interval1,"%m-%d-%y")
+        end1 = datetime.strptime(interval2,"%m-%d-%y")
+        diff = end1.date()-start1.date()
+        empty.append(diff)
+    print(empty)
+    # for day in days:
+    #         print(type(day))
 # gets day value from commits.json and converts to a date type starting at project start
 # removes repeats of dates
 def day_to_date(file) -> list:
@@ -83,6 +103,10 @@ def aggregate_commits_graph(file) -> list:
     for key in count.keys():
         print(key, "->", count[key])
 
+def intervalsToTree(commitsDF: IntervalTree) -> IntervalTree:
+    for i in commitsDF:
+        print(i)
+    #(commitsDF)
 
 def main():
     args: Namespace = getArgs()
@@ -91,8 +115,10 @@ def main():
     issuesDF: DataFrame = loadData(filename=args.issues)
 
     getDeltaLOC(commitsDF=commitsDF)
-    getDay(commitsDF=commitsDF)
-
+    #print(getDay(commitsDF=commitsDF))
+#    print(intervalsToTree(commitsDF=issuesDF))
+#    print(get_created_at_from_issues(issuesDF=issuesDF))
+    change_created_at_from_issues(issuesDF=issuesDF)
     # loc_sum = get_loc_sum_from_issues(issuesDF)
     # get_day = get_day_from_commits(commitsDF)
     # data1 = day_to_date(commitsDF)  ##days of commits
