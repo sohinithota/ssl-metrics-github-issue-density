@@ -1,15 +1,15 @@
 from setuptools import setup
 
-from ssl_metrics_MODULE_NAME import version
+from ssl_metrics_issue_density import version
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="ssl-metrics-MODULE-NAME",
-    packages=["ssl_metrics_MODULE_NAME"],
+    name="ssl-metrics-issue-density",
+    packages=["ssl_metrics_issue_density"],
     version=version.version(),
-    description="SSL Metrics - SHORT DESCRIPTION",
+    description="SSL Metrics - This project reflects defect density of a certain github repository. ",
     author="Software and Systems Laboratory - Loyola University Chicago",
     author_email="ssl-metrics@ssl.luc.edu",
     license="BSD",
@@ -52,8 +52,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "ssl-metrics-MODULE-NAME-collect = ssl_metrics_MODULE_NAME.FILENAME:main",
-            "ssl-metrics-MODULE-NAME-graph = ssl_metrics_MODULE_NAME.create_graph:main",
+            "ssl-metrics-issue-density-collect = ssl_metrics_issue_density.FILENAME:main",
+            "ssl-metrics-issue-density-graph = ssl_metrics_issue_density.create_graph:main",
         ]
     },
 )
