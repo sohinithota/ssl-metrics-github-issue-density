@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 import pandas 
 
+from dateutil.parser import parse
+
 plt.rcdefaults()
 import matplotlib.pyplot as plt
 import numpy as np
@@ -57,21 +59,34 @@ def get_created_at_from_issues(issuesDF: DataFrame) -> DataFrame:
 #make issue days to have intervals- start date is 4/28/2020
 def change_created_at_from_issues(issuesDF: DataFrame) -> DataFrame:
     tree = IntervalTree()
-    days = issuesDF["created_at"]
     empty = []
-    start = date(2020, 4, 28)
-    start = start.strftime("%m-%d-%y")
-    column = issuesDF['created_at'].dt.strftime("%m-%d-%y")
+    intervaltree = []
+    start = datetime(2020, 4, 28,0,0,0)
+    start = start.strftime("%m-%d-%y %H:%M:%S")
+    column = issuesDF['created_at'].dt.strftime("%m-%d-%y %H:%M:%S")
    # print(f"\ncol_one_list:\n{column}\ntype:{type(column)}")
     # days = issuesDF['created_at']
+    empty.append('0 days, 0:00:00')
     for day in column:
         interval1 = start
         interval2 = day
-        start1 = datetime.strptime(interval1,"%m-%d-%y")
-        end1 = datetime.strptime(interval2,"%m-%d-%y")
-        diff = end1.date()-start1.date()
-        empty.append(diff)
-    print(empty)
+        start1 = datetime.strptime(interval1,"%m-%d-%y %H:%M:%S")
+        end1 = datetime.strptime(interval2,"%m-%d-%y %H:%M:%S")
+        delta = end1-start1
+        delta = str(delta)
+        empty.append(delta)
+    counter = 0
+    # while counter<(len(empty)-1):
+    for day in empty:
+        if(counter<len(empty)-1):
+            x = (empty[counter])
+            y = (empty[counter+1])
+            intervaltree.append(x)
+            intervaltree.append(y)
+            counter = counter+1
+            print(x + " " + y)
+            # print(y)
+
     # for day in days:
     #         print(type(day))
 # gets day value from commits.json and converts to a date type starting at project start
@@ -103,10 +118,30 @@ def aggregate_commits_graph(file) -> list:
     for key in count.keys():
         print(key, "->", count[key])
 
-def intervalsToTree(commitsDF: IntervalTree) -> IntervalTree:
-    for i in commitsDF:
-        print(i)
-    #(commitsDF)
+def intervalsToTreeX(issuesDF: DataFrame) -> IntervalTree:
+    tree: IntervalTree = IntervalTree()
+
+    day0: int = issuesDF["created_at"][0].replace(tzinfo=None)
+    createdAtDates: list = [(x.replace(tzinfo=None) - day0).days for x in issuesDF["created_at"].tolist()]
+
+
+    issue: dict
+    # for issue in issuesDF
+    print(createdAtDates)
+
+def intervalsToTreeY(issuesDF: DataFrame) -> IntervalTree:
+    tree: IntervalTree = IntervalTree()
+
+    day0: int = issuesDF["created_at"][0].replace(tzinfo=None)
+    createdAtDates: list = [(x.replace(tzinfo=None) - day0).days for x in issuesDF["closed_at"].tolist()]
+    today = datetime.now()
+    issue: dict
+    # for issue in createdAtDates:
+    #     #print(type(issue))
+    print(createdAtDates)
+
+
+    
 
 def main():
     args: Namespace = getArgs()
@@ -118,7 +153,9 @@ def main():
     #print(getDay(commitsDF=commitsDF))
 #    print(intervalsToTree(commitsDF=issuesDF))
 #    print(get_created_at_from_issues(issuesDF=issuesDF))
-    change_created_at_from_issues(issuesDF=issuesDF)
+    #change_created_at_from_issues(issuesDF=issuesDF)
+    intervalsToTreeX(issuesDF=issuesDF)
+    intervalsToTreeY(issuesDF=issuesDF)
     # loc_sum = get_loc_sum_from_issues(issuesDF)
     # get_day = get_day_from_commits(commitsDF)
     # data1 = day_to_date(commitsDF)  ##days of commits
