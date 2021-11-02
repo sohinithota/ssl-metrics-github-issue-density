@@ -4,6 +4,7 @@ from collections import Counter
 from datetime import date, timedelta, datetime
 from intervaltree import Interval, IntervalTree
 import matplotlib.pyplot as plt
+import math
 from pandas import DataFrame
 import pandas 
 
@@ -127,7 +128,7 @@ def intervalsToTreeX(issuesDF: DataFrame) -> IntervalTree:
 
     issue: dict
     # for issue in issuesDF
-    print(createdAtDates)
+    return createdAtDates
 
 def intervalsToTreeY(issuesDF: DataFrame) -> IntervalTree:
     tree: IntervalTree = IntervalTree()
@@ -138,11 +139,27 @@ def intervalsToTreeY(issuesDF: DataFrame) -> IntervalTree:
     issue: dict
     # for issue in createdAtDates:
     #     #print(type(issue))
-    print(createdAtDates)
+    return createdAtDates
 
+def buildTree()->IntervalTree:
+    t = IntervalTree()
+    args: Namespace = getArgs()
 
-    
+    issuesDF: DataFrame = loadData(filename=args.issues)
+    listx = intervalsToTreeX(issuesDF=issuesDF)
+    listy = intervalsToTreeY(issuesDF=issuesDF)
+    for itemx in range(len(listx)):
+        if (listx[itemx]-listy[itemx]==0):
+            listy[itemx] +=1
+    start = datetime.now()
+    replace(tzinfo=None)
+    day0: int = issuesDF["created_at"][0].replace(tzinfo=None)
+    print(start)
+    #do math and replace 0s with correct delta from today as closing date
+    listy = [0 if x != x else x for x in listy]
 
+    print(listx)
+    print(listy)
 def main():
     args: Namespace = getArgs()
 
@@ -156,6 +173,7 @@ def main():
     #change_created_at_from_issues(issuesDF=issuesDF)
     intervalsToTreeX(issuesDF=issuesDF)
     intervalsToTreeY(issuesDF=issuesDF)
+    buildTree()
     # loc_sum = get_loc_sum_from_issues(issuesDF)
     # get_day = get_day_from_commits(commitsDF)
     # data1 = day_to_date(commitsDF)  ##days of commits
