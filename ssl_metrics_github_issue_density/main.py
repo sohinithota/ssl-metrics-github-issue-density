@@ -1,18 +1,17 @@
 import argparse
+import math
 from argparse import Namespace
 from collections import Counter
-from datetime import date, timedelta, datetime
-from intervaltree import Interval, IntervalTree
-import matplotlib.pyplot as plt
-import math
-from pandas import DataFrame
-import pandas
+from datetime import date, datetime, timedelta
 
-from dateutil.parser import parse
-
-plt.rcdefaults()
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas
+from dateutil.parser import parse
+from intervaltree import Interval, IntervalTree
+from pandas import DataFrame
+
+plt.rcdefaults()
 
 
 def getArgs():
@@ -96,61 +95,6 @@ def change_created_at_from_issues(issuesDF: DataFrame) -> DataFrame:
 
 # gets day value from commits.json and converts to a date type starting at project start
 # removes repeats of dates
-
-
-def intervalsToTreeX(issuesDF: DataFrame, commitsDF: DataFrame) -> IntervalTree:
-    issueDTString: int = (issuesDF["created_at"][0]).replace(tzinfo=None)
-    commitDTString = parse(commitsDF["commit_date"][0]).replace(tzinfo=None)
-    if commitDTString > issueDTString:
-        day0 = issueDTString
-        createdAtDates: list = [
-            (x.replace(tzinfo=None) - day0).days
-            for x in issuesDF["created_at"].tolist()
-        ]
-    elif commitDTString < issueDTString:
-        day0 = commitDTString
-        createdAtDates: list = [
-            (parse(x).replace(tzinfo=None) - day0).days
-            for x in commitsDF["commit_date"].tolist()
-        ]
-    else:
-        day0 = issueDTString
-        createdAtDates: list = [
-            (x.replace(tzinfo=None) - day0).days
-            for x in issuesDF["created_at"].tolist()
-        ]
-    issue: dict
-    # for issue in issuesDF
-    return createdAtDates
-
-def intervalsToTreeY(issuesDF: DataFrame, commitsDF: DataFrame) -> IntervalTree:
-    issueDTString: int = (issuesDF["created_at"][0]).replace(tzinfo=None)
-    commitDTString = parse(commitsDF["commit_date"][0]).replace(tzinfo=None)
-    if commitDTString > issueDTString:
-        day0 = issueDTString
-        createdAtDates: list = [
-            (x.replace(tzinfo=None) - day0).days
-            for x in issuesDF["created_at"].tolist()
-        ]
-    elif commitDTString < issueDTString:
-        day0 = commitDTString
-        createdAtDates: list = [
-            (parse(x).replace(tzinfo=None) - day0).days
-            for x in commitsDF["commit_date"].tolist()
-        ]
-    else:
-        day0 = issueDTString
-        createdAtDates: list = [
-            (x.replace(tzinfo=None) - day0).days
-            for x in issuesDF["created_at"].tolist()
-        ]
-    today = datetime.now()
-    issue: dict
-    # for issue in createdAtDates:
-    #     #print(type(issue))
-    return createdAtDates
-
-
 def buildTree() -> IntervalTree:
     t = IntervalTree()
     args: Namespace = getArgs()
@@ -158,55 +102,47 @@ def buildTree() -> IntervalTree:
     issuesDF: DataFrame = loadData(filename=args.issues)
     commitsDF: DataFrame = loadData(filename=args.commits)
     listx = intervals(issuesDF=issuesDF, commitsDF=commitsDF)
-    listy = intervalsToTreeY(issuesDF=issuesDF, commitsDF=commitsDF)
-    for itemx in range(len(listx)):
-        if listx[itemx] - listy[itemx] == 0:
-            listy[itemx] += 1
-    start = datetime.now()
-    start = start.replace(tzinfo=None)
-   # day0: int = issuesDF["created_at"][0].replace(tzinfo=None)
+    start = datetime.now().replace(tzinfo=None)
+    # day0: int = issuesDF["created_at"][0].replace(tzinfo=None)
     day0: int = parse(commitsDF["commit_date"][0]).replace(tzinfo=None)
     replacer = (start - day0).days
     listx = [replacer if x != x else x for x in listx]
     for itemx in range(len(listx)):
         try:
             t.addi(listx[itemx], listx[itemx + 1], 1)
-        except:
-            #t.addi(listx[itemx], listx[itemx] + 1, 1)
+        except: # TODO: Explicitly call error as the following except: ExceptionClass 
+            # t.addi(listx[itemx], listx[itemx] + 1, 1)
             pass
     listx = list(dict.fromkeys(listx))
-    #print(listx)
-    listy = list(dict.fromkeys(listy))
     print(t)
 
 
 def skipIntervalRepeats(list1):
     listWithoutRepeats = list(dict.fromkeys(list1))
     print(listWithoutRepeats)
-    
 
 
 def intervals(issuesDF: DataFrame, commitsDF: DataFrame) -> IntervalTree:
-    #day 0 is the first commit day
-    day0: int = parse(commitsDF["commit_date"][0])
+    # day 0 is the first commit day
+    day0: int = parse(commitsDF["commit_date"][0]).replace(tzinfo=None)
     date = issuesDF["created_at"][0].replace(tzinfo=None)
-    print(date)
-    print(day0)
-    #createdAtDates: list = [(x.replace(tzinfo=None) - day0).days for x in issuesDF["created_at"].tolist()]
-    createdAtDates = list()
-    todaysDate = datetime.now()
-    #fills in the closed_at values with today's values if they are null
+    # createdAtDates: list = [(x.replace(tzinfo=None) - day0).days for x in issuesDF["created_at"].tolist()]
+    createdAtDates: list = []
+    todaysDate = datetime.now().replace(tzinfo=None)
+    # fills in the closed_at values with today's values if they are null
     issuesDF["closed_at"] = issuesDF["closed_at"].fillna(todaysDate)
-    #convert to one list of days
-    for startingDate,closingDate in zip(issuesDF["created_at"],issuesDF["closed_at"]):            
-        startingDate = (startingDate.replace(tzinfo=None)-day0.replace(tzinfo=None)).days
-        closingDate = (closingDate.replace(tzinfo=None)-day0.replace(tzinfo=None)).days
+    # convert to one list of days
+    for startingDate, closingDate in zip(issuesDF["created_at"], issuesDF["closed_at"]):
+        startingDate = (
+            startingDate.replace(tzinfo=None) - day0
+        ).days
+        closingDate = (
+            closingDate.replace(tzinfo=None) - day0
+        ).days
         createdAtDates.append(startingDate)
         createdAtDates.append(closingDate)
-    issue: dict
-    # for issue in issuesDF
-    print(createdAtDates)
     return createdAtDates
+
 
 def main():
     args: Namespace = getArgs()
@@ -215,28 +151,10 @@ def main():
     issuesDF: DataFrame = loadData(filename=args.issues)
 
     getDeltaLOC(commitsDF=commitsDF)
-    # print(getDay(commitsDF=commitsDF))
-    #    print(intervalsToTree(commitsDF=issuesDF))
-    #    print(get_created_at_from_issues(issuesDF=issuesDF))
-    # change_created_at_from_issues(issuesDF=issuesDF)
     intervals(issuesDF=issuesDF, commitsDF=commitsDF)
-    intervalsToTreeY(issuesDF=issuesDF, commitsDF=commitsDF)
     buildTree()
-    #intervals(issuesDF=issuesDF, commitsDF=commitsDF)
-
-    # loc_sum = get_loc_sum_from_issues(issuesDF)
-    # get_day = get_day_from_commits(commitsDF)
-    # data1 = day_to_date(commitsDF)  ##days of commits
-    # get_created_at_from_issues(issuesDF)
-    # aggregate_commits_graph(data1)
-    # get the value LOC_sum from commits.json
 
 
 if __name__ == "__main__":
     main()
 
-
-# get values from both files:
-# issues.json: created_at/updated_at/closed_at (for timeline), user (attached to each)
-# commits.json: LOC_sum (module size),  day (for timeline) - DONE
-# create timeline of commits, in between put issues
